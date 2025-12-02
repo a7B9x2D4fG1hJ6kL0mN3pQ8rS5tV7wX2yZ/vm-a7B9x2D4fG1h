@@ -1,0 +1,43 @@
+name: Check Frigost Version
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Toutes les 30 minutes
+  workflow_dispatch: # Permet de lancer manuellement
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run version checker
+        env:
+          GITHUB_ACTIONS: 'true'
+        run: python frigost_version_checker.py
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'FrigostBot'
+          git config --global user.email 'bot@frigost.dev'
+          git add last_version_frigost.txt
+          # Vérifie s'il y a des changements avant de commit pour éviter les erreurs
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "Update Frigost version"
+            git push
+          else
+            echo "No changes to commit"
+          fi
