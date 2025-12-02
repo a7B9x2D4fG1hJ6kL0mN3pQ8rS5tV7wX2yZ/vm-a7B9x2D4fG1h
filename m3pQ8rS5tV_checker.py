@@ -66,6 +66,15 @@ def main():
                     f.write(current_filename)
             else:
                 print(f"[{time.strftime('%H:%M:%S')}] Pas de changement (Version actuelle : {current_filename})")
+                # Envoyer une notification Discord pour confirmer que le monitoring fonctionne
+                data = {
+                    "content": f"✅ **Monitoring active** ✅\n\nCurrent version: **{current_filename}**\n_No changes detected_"
+                }
+                try:
+                    requests.post(WEBHOOK_URL, json=data)
+                    print(f"[{time.strftime('%H:%M:%S')}] Status notification sent.")
+                except Exception as e:
+                    print(f"[{time.strftime('%H:%M:%S')}] Error sending status: {e}")
         
         if run_once:
             break
