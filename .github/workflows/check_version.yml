@@ -1,74 +1,46 @@
-name: Check Frigost Version
+name: Version Monitor
 
 on:
-  workflow_dispatch:  # Seulement exécution manuelle via API/interface
-  # Supprimez le schedule si présent pour éviter les exécutions automatiques
+  schedule:
+    - cron: '*/5 * * * *'   # toutes les 5 minutes (UTC)
+  workflow_dispatch:         # permet de lancer manuellement
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Get current version
-      id: get_version
-      run: |
-        # Télécharge la version depuis votre URL
-        VERSION_URL="https://raw.githubusercontent.com/a7B9x2D4fG1hJ6kL0mN3pQ8rS5tV7wX2yZ/vm-a7B9x2D4fG1h/refs/heads/main/v7wX2yZ_a7B9x2D4fG1hJ6kL0mN3pQ8rS5tV.dat"
-        CURRENT_VERSION=$(curl -s $VERSION_URL)
-        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        echo "Version récupérée: $CURRENT_VERSION"
-    
-    - name: Compare versions
-      id: compare
-      run: |
-        # Récupère la version stockée localement (si existante)
-        if [ -f "version.txt" ]; then
-          LOCAL_VERSION=$(cat version.txt)
-          echo "Version locale: $LOCAL_VERSION"
-        else
-          LOCAL_VERSION=""
-          echo "Aucune version locale trouvée"
-        fi
-        
-        CURRENT_VERSION="${{ steps.get_version.outputs.current_version }}"
-        
-        # Compare les versions
-        if [ "$LOCAL_VERSION" = "$CURRENT_VERSION" ]; then
-          echo "Les versions sont identiques"
-          echo "has_changed=false" >> $GITHUB_OUTPUT
-        else
-          echo "NOUVELLE VERSION DÉTECTÉE !"
-          echo "Ancienne: $LOCAL_VERSION"
-          echo "Nouvelle: $CURRENT_VERSION"
-          echo "has_changed=true" >> $GITHUB_OUTPUT
-          
-          # Met à jour le fichier local
-          echo "$CURRENT_VERSION" > version.txt
-        fi
-    
-    - name: Send notification if changed
-      if: steps.compare.outputs.has_changed == 'true'
-      run: |
-        # Envoie une notification (optionnel)
-        echo "🔔 Nouvelle version disponible !"
-        # Vous pouvez ajouter une notification Discord/Email ici
-        
-    - name: Commit changes if version changed
-      if: steps.compare.outputs.has_changed == 'true'
-      run: |
-        # Configure Git
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # Commit et push si la version a changé
-        git add version.txt
-        git commit -m "Update Frigost version to ${{ steps.get_version.outputs.current_version }}"
-        git push
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run version checker
+        env:
+          GITHUB_ACTIONS: 'true'
+        run: python m3pQ8rS5tV_checker.py
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'FrigostBot'
+          git config --global user.email 'bot@frigost.dev'
+          git add v7wX2yZ_a7B9x2D4fG1hJ6kL0mN3pQ8rS5tV.dat
+
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "Update Frigost version"
+            git push
+          else
+            echo "No changes to commit"
