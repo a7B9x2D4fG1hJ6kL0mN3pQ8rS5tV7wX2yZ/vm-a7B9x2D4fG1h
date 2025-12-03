@@ -2,8 +2,8 @@ name: Version Monitor
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # toutes les 5 minutes (UTC)
-  workflow_dispatch:         # permet de lancer manuellement
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -36,8 +36,8 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          git config --global user.name 'FrigostBot'
-          git config --global user.email 'bot@frigost.dev'
+          git config --global user.name 'nil'
+          git config --global user.email 'nil@nil.dev'
           git add v7wX2yZ_a7B9x2D4fG1hJ6kL0mN3pQ8rS5tV.dat
 
           if [[ -n $(git status -s) ]]; then
@@ -45,3 +45,4 @@ jobs:
             git push
           else
             echo "No changes to commit"
+          fi
