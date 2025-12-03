@@ -2,8 +2,8 @@ name: Version Monitor
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # Toutes les 5 minutes
-  workflow_dispatch:         # Permet de lancer manuellement
+    - cron: '*/5 * * * *'   # toutes les 5 minutes (UTC)
+  workflow_dispatch:         # permet de lancer manuellement
   push:
     branches:
       - main
@@ -39,10 +39,8 @@ jobs:
           git config --global user.email 'bot@frigost.dev'
           git add v7wX2yZ_a7B9x2D4fG1hJ6kL0mN3pQ8rS5tV.dat
 
-          # Vérifie s'il y a des changements avant de commit
           if [[ -n $(git status -s) ]]; then
             git commit -m "Update Frigost version"
             git push
           else
             echo "No changes to commit"
-          fi
