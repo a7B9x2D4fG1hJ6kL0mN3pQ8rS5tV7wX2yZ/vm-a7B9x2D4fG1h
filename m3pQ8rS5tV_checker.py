@@ -42,44 +42,20 @@ def main():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             last_known_version = f.read().strip()
-            print(f"Last known version loaded: {last_known_version}")
     
-    # Mode GitHub Actions (une seule exécution) ou Local (boucle infinie)
-    run_once = os.environ.get('GITHUB_ACTIONS') == 'true'
+    current_filename = get_remote_filename()
     
-    while True:
-        current_filename = get_remote_filename()
-        
-        if current_filename:
-            if last_known_version is None:
-                print(f"[{time.strftime('%H:%M:%S')}] Initialisation avec la version : {current_filename}")
-                last_known_version = current_filename
-                with open(STATE_FILE, "w") as f:
-                    f.write(current_filename)
-            
-            elif current_filename != last_known_version:
-                print(f"[{time.strftime('%H:%M:%S')}] CHANGEMENT DÉTECTÉ : {last_known_version} -> {current_filename}")
-                send_discord_notification(current_filename)
-                
-                last_known_version = current_filename
-                with open(STATE_FILE, "w") as f:
-                    f.write(current_filename)
-            else:
-                print(f"[{time.strftime('%H:%M:%S')}] Pas de changement (Version actuelle : {current_filename})")
-                # Envoyer une notification Discord pour confirmer que le monitoring fonctionne
-                data = {
-                    "content": f"✅ **Monitoring active** ✅\n\nCurrent version: **{current_filename}**\n_No changes detected_"
-                }
-                try:
-                    requests.post(WEBHOOK_URL, json=data)
-                    print(f"[{time.strftime('%H:%M:%S')}] Status notification sent.")
-                except Exception as e:
-                    print(f"[{time.strftime('%H:%M:%S')}] Error sending status: {e}")
-        
-        if run_once:
-            break
-            
-        time.sleep(CHECK_INTERVAL)
+    if current_filename:
+        if last_known_version is None:
+            last_known_version = current_filename
+            with open(STATE_FILE, "w") as f:
+                f.write(current_filename)
+        elif current_filename != last_known_version:
+            send_discord_notification(current_filename)
+            with open(STATE_FILE, "w") as f:
+                f.write(current_filename)
+        else:
+            print(f"No change: {current_filename}")
 
 if __name__ == "__main__":
     main()
